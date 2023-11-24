@@ -1,0 +1,60 @@
+html {
+    height: 100%;
+}
+
+* {
+    margin: 0;
+    font-family: HelveticaNeue-Thin, Helvetica, Arial;
+    background-color: black;
+}
+
+body {
+    /* background-image: url(images/bright-squares-1920x1080.png);
+    background-size: cover;
+    background-attachment: fixed; */
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    color: white;
+}
+
+.pass {
+    color: #16FF00;
+}
+
+.fail {
+    color: #ff1500;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 3rem 0 3rem 0;
+}
+
+.oneline {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.slider-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+@media (min-width:600px) {
+    .slider-box {
+        width: 400px;
+    }
+}
