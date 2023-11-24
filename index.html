@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deep-Fake Verification</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="mainContainer">
+      <div class="modal">
+        <div class="getVerified">
+          <div class="handleBtn">
+            <button class="getVerifiedBtn">
+              <h2>Get Verified Yourself</h2>
+            </button>
+          </div>
+          <div class="instruction">
+            <div>
+              <h2>Instrction for Recording a video</h2>
+              <h3>What we expect!</h3>
+              <ul>
+                <li>Video Shouldn't be blur.</li>
+                <li>The voice should be clear.</li>
+                <li>Full face should be in frame.</li>
+                <li>Should be alone while recording video.</li>
+                <li>Lips should be moving while speaking.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="note">
+            <h2>NOTE:</h2>
+            <h3>
+              The video should be made by the same device from which you are
+              reading this Verification Request.
+            </h3>
+          </div>
+        </div>
+        <div class="sayOutLoad hidden">
+          <h2>
+            Say Out Loud : <em><b> One, Two, Three</b></em> While Recording
+          </h2>
+        </div>
+        <div class="loader hidden">
+          <div class="square" id="sq1"></div>
+          <div class="square" id="sq2"></div>
+          <div class="square" id="sq3"></div>
+          <div class="square" id="sq4"></div>
+          <div class="square" id="sq5"></div>
+          <div class="square" id="sq6"></div>
+          <div class="square" id="sq7"></div>
+          <div class="square" id="sq8"></div>
+          <div class="square" id="sq9"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay"></div>
+
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
