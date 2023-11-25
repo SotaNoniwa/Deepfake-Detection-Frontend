@@ -1,5 +1,6 @@
 "use strict";
 
+// Global variables
 const btnForOpenCamera = document.querySelector(".getVerifiedBtn");
 const getVerifiedBox = document.querySelector(".getVerified");
 const modal = document.querySelector(".modal");
@@ -7,6 +8,7 @@ const loader = document.querySelector(".loader");
 const sayOutLoad = document.querySelector(".sayOutLoad");
 const afterPicture = document.querySelector(".afterPicture");
 const next = document.querySelector(".nextToVideo");
+const lastImage = document.querySelector(".lastImage");
 
 const videoBox = document.createElement("div");
 const videoTimer = document.createElement("div");
@@ -17,16 +19,26 @@ const rocerdingStartImg = document.createElement("img");
 const rocerdPauseImg = document.createElement("img");
 const rocerdResumeImg = document.createElement("img");
 
+const recordedVideo = document.createElement("video");
+recordedVideo.classList.add("recordedVideo");
+
+const uploadPicBtn = document.createElement("button");
+const resetPicBtn = document.createElement("button");
+
+const uploadBtn = document.createElement("button");
+const resetBtn = document.createElement("button");
+const watchBtn = document.createElement("img");
+
 let isPaused = true;
 let isRecording = true;
 
-let timerValue = 10; // Initial timer value in seconds
+let timerValue = 10;
 let blinkInterval;
 let timerInterval;
 
-let recordedChunks = []; // Array to store recorded video chunks
-let mediaRecorder; // MediaRecorder object
-let stream; // Store the stream globally
+let recordedChunks = [];
+let mediaRecorder;
+let stream;
 
 nextToVideo.classList.add("handleBtn");
 
@@ -48,6 +60,9 @@ modal.appendChild(videoBox);
 
 videoBox.classList.add("videoBox");
 
+// Functions
+
+// Function to open the camera for video recording
 function openCamera(e) {
   e.preventDefault();
   afterPicture.classList.add("hidden");
@@ -55,7 +70,6 @@ function openCamera(e) {
   sayOutLoad.classList.remove("hidden");
   loader.classList.remove("hidden");
 
-  // Open the user's device camera without streaming
   navigator.mediaDevices
     .getUserMedia({ video: true, audio: true })
     .then(function (userStream) {
@@ -71,13 +85,10 @@ function openCamera(e) {
       videoBox.appendChild(rocerdingStartImg);
       videoBox.appendChild(videoTimer);
 
-      // Initialize MediaRecorder
-      //   mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
       mediaRecorder = new MediaRecorder(stream, {
         mimeType: "video/webm;codecs=vp9,opus",
       });
 
-      // Add event listeners for data available and stop events
       mediaRecorder.ondataavailable = function (event) {
         if (event.data.size > 0) {
           recordedChunks.push(event.data);
@@ -93,8 +104,110 @@ function openCamera(e) {
     });
 }
 
-// btnForOpenCamera.addEventListener("click", openCamera);
+// Function to start blinking the recording state indicator
+function startBlinking() {
+  blinkInterval = setInterval(function () {
+    videoState.style.visibility =
+      videoState.style.visibility === "hidden" ? "visible" : "hidden";
+  }, 1000);
+}
 
+// Function to stop blinking the recording state indicator
+function stopBlinking() {
+  clearInterval(blinkInterval);
+  videoState.style.visibility = "visible";
+  videoState.innerHTML = "<h3> Pause </h3>";
+  stopTimer();
+}
+
+// Function to start the countdown timer
+function startTimer() {
+  timerInterval = setInterval(function () {
+    timerValue--;
+    if (timerValue >= 0) {
+      videoTimer.innerHTML = `<h3>${timerValue} sec</h3>`;
+    } else {
+      stopBlinking();
+      rocerdingStartImg.src = "./images/recordVideo.png";
+
+      showUploadResetButtons();
+    }
+  }, 1000);
+}
+
+// Function to stop the countdown timer
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+// Function to show the recorded video after recording is finished
+function showRecordedVideo() {
+  const streamingVideo = document.querySelector(".handleVideo");
+  if (streamingVideo) {
+    const tracks = streamingVideo.srcObject.getTracks();
+    tracks.forEach((track) => track.stop());
+  }
+
+  videoState.style.display = "none";
+  videoTimer.style.display = "none";
+
+  const recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
+  recordedVideo.src = URL.createObjectURL(recordedBlob);
+  recordedVideo.autoplay = false;
+  recordedVideo.controls = true;
+  videoBox.innerHTML = "";
+
+  videoBox.appendChild(recordedVideo);
+  videoBox.appendChild(watchBtn);
+  videoBox.appendChild(uploadBtn);
+  videoBox.appendChild(resetBtn);
+}
+
+// Function to reset the recording process
+function resetRecording(e) {
+  // videoBox.appendChild(loader);
+  // loader.classList.remove("hidden");
+  recordedChunks = [];
+  videoBox.innerHTML = "";
+  isPaused = true;
+  isRecording = true;
+
+  timerInterval = "";
+  mediaRecorder = "";
+  stream = "";
+
+  timerValue = 10;
+  rocerdingStartImg.src = "./images/recordVideo.png";
+  takeAPic.src = "./images/recordVideo.png";
+  videoTimer.innerHTML = `<h3>${timerValue} sec</h3>`;
+
+  videoState.style.display = "";
+  videoTimer.style.display = "";
+  openCamera(e);
+}
+
+// Function to upload the recorded video
+function uploadRecording() {
+  const recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
+  const formData = new FormData();
+  formData.append("video", recordedBlob, "recorded.webm");
+
+  fetch("/upload", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Video uploaded successfully:", data);
+    })
+    .catch((error) => {
+      console.error("Error uploading video:", error);
+    });
+}
+
+// Event listeners
+
+// Event listener for the start/stop recording button
 rocerdingStartImg.addEventListener("click", function (e) {
   e.preventDefault();
   videoBox.appendChild(videoState);
@@ -103,7 +216,6 @@ rocerdingStartImg.addEventListener("click", function (e) {
     rocerdingStartImg.src = "./images/record.png";
     isRecording = false;
 
-    // Start the MediaRecorder
     try {
       mediaRecorder.start();
       startBlinking();
@@ -115,7 +227,6 @@ rocerdingStartImg.addEventListener("click", function (e) {
     return;
   }
 
-  // Stop the MediaRecorder
   rocerdingStartImg.src = "./images/record.png";
   isRecording = true;
   stopBlinking();
@@ -123,6 +234,7 @@ rocerdingStartImg.addEventListener("click", function (e) {
   mediaRecorder.stop();
 });
 
+// Event listener for the pause/resume button during recording
 rocerdPauseImg.addEventListener("click", function (e) {
   e.preventDefault();
   if (!isPaused) {
@@ -137,49 +249,6 @@ rocerdPauseImg.addEventListener("click", function (e) {
   isPaused = false;
   stopBlinking();
 });
-
-function startBlinking() {
-  blinkInterval = setInterval(function () {
-    videoState.style.visibility =
-      videoState.style.visibility === "hidden" ? "visible" : "hidden";
-  }, 1000);
-}
-
-function stopBlinking() {
-  clearInterval(blinkInterval);
-  videoState.style.visibility = "visible"; // Ensure it's visible after stopping blinking
-  videoState.innerHTML = "<h3> Pause </h3>";
-  stopTimer();
-}
-
-function startTimer() {
-  timerInterval = setInterval(function () {
-    timerValue--;
-    if (timerValue >= 0) {
-      videoTimer.innerHTML = `<h3>${timerValue} sec</h3>`;
-    } else {
-      stopBlinking();
-      rocerdingStartImg.src = "./images/recordVideo.png";
-
-      // Upload option or re-recording
-      showUploadResetButtons();
-    }
-  }, 1000);
-}
-
-function stopTimer() {
-  clearInterval(timerInterval);
-}
-
-const recordedVideo = document.createElement("video");
-recordedVideo.classList.add("recordedVideo");
-
-const uploadPicBtn = document.createElement("button");
-const resetPicBtn = document.createElement("button");
-
-const uploadBtn = document.createElement("button");
-const resetBtn = document.createElement("button");
-const watchBtn = document.createElement("img");
 
 uploadBtn.classList.add("uploadBtn");
 resetBtn.classList.add("resetBtn");
@@ -198,24 +267,21 @@ let uploadIcon = `<div class="sign"><svg fill="#000000" viewBox="0 0 512 512" da
 <div class="text">Reset</div>`;
 resetBtn.innerHTML = uploadIcon;
 resetPicBtn.innerHTML = uploadIcon;
-// watchBtn.src = "./images/resume.png";
-// watchBtn.setAttribute("alt", "No Image");
 
 watchBtn.classList.add("watchPauseAndResume");
 watchBtn.src = "./images/resume.png";
 watchBtn.setAttribute("alt", "No Image");
 
-// Listen for the "ended" event on the recordedVideo
 recordedVideo.addEventListener("ended", function () {
   recordedVideo.pause();
   watchBtn.src = "./images/resume.png";
 });
 
-// Listen for the "pause" event on the recordedVideo
 recordedVideo.addEventListener("pause", function () {
   watchBtn.src = "./images/resume.png";
 });
 
+// Function to toggle video playback (play/pause)
 function toggleVideoPlayback() {
   if (recordedVideo.paused || recordedVideo.ended) {
     recordedVideo.play();
@@ -227,98 +293,24 @@ function toggleVideoPlayback() {
   }
 }
 
-// Event listener for watchBtn click
 watchBtn.addEventListener("click", toggleVideoPlayback);
 
-function showRecordedVideo() {
-  // Stop the streaming video
-  const streamingVideo = document.querySelector(".handleVideo");
-  if (streamingVideo) {
-    const tracks = streamingVideo.srcObject.getTracks();
-    tracks.forEach((track) => track.stop());
-  }
-
-  // Hide the videoState and timer
-  videoState.style.display = "none";
-  videoTimer.style.display = "none";
-
-  // Show the recorded video
-  const recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
-  recordedVideo.src = URL.createObjectURL(recordedBlob);
-  recordedVideo.autoplay = false;
-  recordedVideo.controls = true;
-  videoBox.innerHTML = "";
-
-  videoBox.appendChild(recordedVideo);
-  videoBox.appendChild(watchBtn);
-  videoBox.appendChild(uploadBtn);
-  videoBox.appendChild(resetBtn);
-}
-
+// Function to show the upload/reset buttons after recording
 function showUploadResetButtons() {
-  // Implement logic to show upload/reset buttons or handle the end of recording
   console.log("Recording Finished. Show Upload/Reset Buttons.");
 
-  // For demonstration purposes, show the recorded video at the end
   showRecordedVideo();
 }
 
-function resetRecording(e) {
-  recordedChunks = [];
-  videoBox.innerHTML = "";
-  isPaused = true;
-  isRecording = true;
-
-  timerInterval = "";
-  mediaRecorder = "";
-  stream = "";
-
-  timerValue = 10; // Initial timer value in seconds
-  rocerdingStartImg.src = "./images/recordVideo.png";
-  takeAPic.src = "./images/recordVideo.png";
-  videoTimer.innerHTML = `<h3>${timerValue} sec</h3>`;
-
-  // Hide the videoState and timer
-  videoState.style.display = "";
-  videoTimer.style.display = "";
-  openCamera(e);
-}
-
-function uploadRecording() {
-  const recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
-  // Create a FormData object to send the blob to the server
-  const formData = new FormData();
-  formData.append("video", recordedBlob, "recorded.webm");
-
-  // Send the blob to the server
-  fetch("/upload", {
-    method: "POST",
-    body: formData,
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Video uploaded successfully:", data);
-    })
-    .catch((error) => {
-      console.error("Error uploading video:", error);
-    });
-}
-
-// Event listener for resetBtn click
+// Event listener for the reset button after recording
 resetBtn.addEventListener("click", resetRecording);
 
-// Event listener for uploadBtn click
+// Event listener for the upload button after recording
 uploadBtn.addEventListener("click", uploadRecording);
 
-//########################################################
-//########################################################
-//########################################################
-//########################################################
-//########################################################
-//########################################################
-//########################################################
-//########################################################
-//########################################################
+// Event listener for the next button to switch to video recording
+next.addEventListener("click", openCamera);
+
 //########################################################
 //########################################################
 const takeAPic = document.createElement("img");
@@ -328,33 +320,29 @@ takeAPic.classList.add("recordToggleBtn");
 takeAPic.src = "./images/takingPic.png";
 takeAPic.setAttribute("alt", "No Image");
 
+// Function to open the camera for taking pictures
 function openCameraForPic() {
   getVerifiedBox.classList.add("hidden");
   loader.classList.remove("hidden");
   uploadIDCard.classList.remove("hidden");
 
-  // Open the user's device camera without streaming
   navigator.mediaDevices
-    .getUserMedia({ video: true, audio: false }) // Disable audio for picture
+    .getUserMedia({ video: true, audio: false })
     .then(function (userStream) {
-      stream = userStream; // Store the stream globally
+      stream = userStream;
 
-      // Create video element
       let video = document.createElement("video");
       video.srcObject = stream;
       video.autoplay = true;
       video.muted = true;
 
-      // Append the video to the container
       videoBox.innerHTML = "";
       videoBox.appendChild(video);
       videoBox.appendChild(takeAPic);
 
-      // Log to check if the video element is present in the DOM
       console.log("Video element:", video);
       console.log("Video parent element:", video.parentElement);
 
-      // Show the upload/reset buttons or other UI elements
       showUploadResetButtonsForPic();
     })
     .catch(function (error) {
@@ -363,18 +351,14 @@ function openCameraForPic() {
 }
 
 let capturedFrameDataURL;
+
+// Function to show upload and reset buttons after taking a picture
 function showUploadResetButtonsForPic() {
-  // Implement logic to show upload/reset buttons or handle the end of capturing a picture
   console.log("Camera opened. Show Upload/Reset Buttons.");
 
-  // For demonstration purposes, you can show any relevant UI elements here
-
-  // Add click event listener to takeAPic after opening the camera
   takeAPic.addEventListener("click", function (e) {
     e.preventDefault();
-    // Capture the picture after the user clicks the button
     if (stream) {
-      // Check if the camera is still active
       capturePicture();
       videoBox.appendChild(resetPicBtn);
       videoBox.appendChild(uploadPicBtn);
@@ -384,11 +368,10 @@ function showUploadResetButtonsForPic() {
   });
 }
 
+// Function to capture a picture from the camera stream
 function capturePicture() {
-  // Capture a frame from the video stream and display it as an image
   const video = document.querySelector("video");
 
-  // Check if the video element is present in the DOM
   if (video && video.parentElement) {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
@@ -398,32 +381,29 @@ function capturePicture() {
 
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Convert the canvas content to a data URL and store it
     capturedFrameDataURL = canvas.toDataURL();
 
-    // Display the captured image
     const image = new Image();
     image.src = capturedFrameDataURL;
     image.classList.add("capturedImage");
 
     videoBox.innerHTML = "";
     videoBox.appendChild(image);
-    // You can save the image data or perform other actions here
   } else {
     console.error("Video element not found. Cannot capture picture.");
   }
 }
 
-// Event listener for resetBtn click
+// Event listener for the reset button after taking a picture
 resetPicBtn.addEventListener("click", function (e) {
   e.preventDefault();
-  // Stop the camera before resetting
   stopCamera();
   recordedChunks = [];
   resetRecordingForPic();
   openCameraForPic();
 });
 
+// Function to stop the camera stream
 function stopCamera() {
   if (stream) {
     const tracks = stream.getTracks();
@@ -432,52 +412,37 @@ function stopCamera() {
   }
 }
 
-// Add click event listener to btnForOpenCamera to open the camera
+// Event listener for the button to open the camera for taking pictures
 btnForOpenCamera.addEventListener("click", function (e) {
   e.preventDefault();
-  // Stop the camera before opening a new one
   stopCamera();
   openCameraForPic();
 });
 
+// Function to reset the recording process for taking pictures
 function resetRecordingForPic() {
-  // Clear the videoBox
   videoBox.innerHTML = "";
 }
 
-// function uploadPicture() {
-//   const recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
-//   // Create a FormData object to send the blob to the server
-//   const formData = new FormData();
-//   formData.append("video", recordedBlob, "recorded.webm");
-
-//   // Send the blob to the server
-//   fetch("/upload", {
-//     method: "POST",
-//     body: formData,
-//   })
-//     .then((response) => response.json())
-//     .then((data) => {
-//       console.log("Video uploaded successfully:", data);
-//     })
-//     .catch((error) => {
-//       console.error("Error uploading video:", error);
-//     });
-// }
+// Function to upload the captured picture
 function uploadPicture() {
-  // Check if a frame has been captured
   if (capturedFrameDataURL) {
-    // Save the captured image locally
     saveToLocal(capturedFrameDataURL, "captured_image.png");
 
-    // Create a Blob from the data URL
     const blob = dataURLtoBlob(capturedFrameDataURL);
-
-    // Create a FormData object to send the blob to the server
     const formData = new FormData();
+
+    // Create an image element
+    const img = document.createElement("img");
+    img.src = capturedFrameDataURL;
+    img.alt = "Captured Image";
+
+    // Append the image to the lastImage container
+    lastImage.innerHTML = "";
+    lastImage.appendChild(img);
+
     formData.append("image", blob, "captured_image.png");
     uloadingStatus();
-    // Send the blob to the server
     fetch("/upload", {
       method: "POST",
       body: formData,
@@ -494,7 +459,7 @@ function uploadPicture() {
   }
 }
 
-// Helper function to convert data URL to Blob
+// Function to convert data URL to a Blob
 function dataURLtoBlob(dataURL) {
   const byteString = atob(dataURL.split(",")[1]);
   const ab = new ArrayBuffer(byteString.length);
@@ -507,7 +472,7 @@ function dataURLtoBlob(dataURL) {
   return new Blob([ab], { type: "image/png" });
 }
 
-// Helper function to save data URL locally
+// Function to save the data URL as a local file
 function saveToLocal(dataURL, filename) {
   const link = document.createElement("a");
   link.href = dataURL;
@@ -515,6 +480,7 @@ function saveToLocal(dataURL, filename) {
   link.click();
 }
 
+// Function to show the uploading status
 function uloadingStatus() {
   videoBox.innerHTML = "";
   uploadIDCard.classList.add("hidden");
@@ -527,7 +493,8 @@ function uloadingStatus() {
   }, 1000);
 }
 
-// Event listener for uploadBtn click
+// Event listener for the upload button after taking a picture
 uploadPicBtn.addEventListener("click", uploadPicture);
 
+// Event listener for the next button to switch back to video recording
 next.addEventListener("click", openCamera);
