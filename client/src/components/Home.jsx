@@ -1,90 +1,55 @@
-import React, { useState } from "react";
-import { FaCheckCircle } from "react-icons/fa";
-import { FaTimesCircle } from "react-icons/fa";
-import { styled, alpha, Box } from '@mui/system';
-import Slider from "./Slider";
+import React, { useState } from 'react';
+import "../Home.css";
 
-const Home = () => {
-  /* CONDITIONS FOR DETECTION */
-  const [alone, setAlone] = useState(true);
-  const [eye, setEye] = useState(false);
-  const [lip, setIsLipOpen] = useState(false);
-  const [color, setColor] = useState(false);
-  const [blur, setBlur] = useState(false);
-  const [voice, setVoice] = useState(false);
+const VerificationComponent = () => {
+  const [showVideoBox, setShowVideoBox] = useState(false);
+
+  const openCamera = (e) => {
+    e.preventDefault();
+    setShowVideoBox(true);
+
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then(function (stream) {
+        let video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = true;
+        document.querySelector('.videoBox').appendChild(video);
+      })
+      .catch(function (error) {
+        console.error('Error accessing camera:', error);
+      });
+  };
 
   return (
-    <div className="container">
-      <h2 className="fail">
-        Evaluation: Deepfake
-      </h2>
-      <div className="oneline">
-        <h4>The number of people validation</h4>
-        {alone ? <FaCheckCircle className="pass" /> : <FaTimesCircle className="fail" />}
+    <div className="mainContainer">
+      <div className={`modal ${showVideoBox ? 'hidden' : ''}`}>
+        <div className="getVerified">
+          <div className="handleBtn">
+            <button className="getVerifiedBtn" onClick={openCamera}>
+              <h2>Get Verified Yourself</h2>
+            </button>
+          </div>
+          <div className="instruction">
+            {/* ... Remaining HTML code ... */}
+          </div>
+          <div className="note">
+            {/* ... Remaining HTML code ... */}
+          </div>
+        </div>
+        <div className={`sayOutLoad ${showVideoBox ? '' : 'hidden'}`}>
+          <h2>
+            Say Out Loud : <em><b> One, Two, Three</b></em> While Recording
+          </h2>
+        </div>
+        <div className={`loader ${showVideoBox ? '' : 'hidden'}`}>
+          {/* ... Remaining HTML code ... */}
+        </div>
       </div>
-      <p>75%</p>
-      <Box className="slider-box">
-        <p>0</p>
-        <Slider defaultValue={75} />
-        <p>100</p>
-      </Box>
-
-      <div className="oneline">
-        <h4>Eye validation</h4>
-        {eye ? <FaCheckCircle className="pass" /> : <FaTimesCircle className="fail" />}
-      </div>
-      <p>75%</p>
-      <Box className="slider-box">
-        <p>0</p>
-        <Slider defaultValue={75} />
-        <p>100</p>
-      </Box>
-
-      <div className="oneline">
-        <h4>Lips validation</h4>
-        {lip ? <FaCheckCircle className="pass" /> : <FaTimesCircle className="fail" />}
-      </div>
-      <p>75%</p>
-      <Box className="slider-box">
-        <p>0</p>
-        <Slider defaultValue={75} />
-        <p>100</p>
-      </Box>
-
-      <div className="oneline">
-        <h4>Color validation</h4>
-        {color ? <FaCheckCircle className="pass" /> : <FaTimesCircle className="fail" />}
-      </div>
-      <p>75%</p>
-      <Box className="slider-box">
-        <p>0</p>
-        <Slider defaultValue={75} />
-        <p>100</p>
-      </Box>
-
-      <div className="oneline">
-        <h4>Blur or glare validation</h4>
-        {blur ? <FaCheckCircle className="pass" /> : <FaTimesCircle className="fail" />}
-      </div>
-      <p>75%</p>
-      <Box className="slider-box">
-        <p>0</p>
-        <Slider defaultValue={75} />
-        <p>100</p>
-      </Box>
-
-      <div className="oneline">
-        <h4>Voice validation</h4>
-        {voice ? <FaCheckCircle className="pass" /> : <FaTimesCircle className="fail" />}
-      </div>
-      <p>75%</p>
-      <Box className="slider-box">
-        <p>0</p>
-        <Slider defaultValue={75} />
-        <p>100</p>
-      </Box>
+      <div className="overlay"></div>
+      <div className="videoBox"></div>
     </div>
   );
-}
+};
 
-export default Home;
+export default VerificationComponent;
