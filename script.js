@@ -9,6 +9,7 @@ const sayOutLoad = document.querySelector(".sayOutLoad");
 const afterPicture = document.querySelector(".afterPicture");
 const next = document.querySelector(".nextToVideo");
 const lastImage = document.querySelector(".lastImage");
+const sliderBox = document.querySelector(".slider-container");
 
 const videoBox = document.createElement("div");
 const videoTimer = document.createElement("div");
@@ -61,6 +62,36 @@ modal.appendChild(videoBox);
 videoBox.classList.add("videoBox");
 
 // Functions
+
+// ###########################################################################################
+function updateSliderValue(valueId, sliderValue) {
+  // Update the value displayed above the slider
+  document.getElementById(valueId).innerText = sliderValue;
+
+  //   console.log(`Slider value updated: ${sliderValue}`);
+}
+
+// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+function loadJSONValues() {
+  fetch("sliderResult.json")
+    .then((response) => response.json())
+    .then((data) => {
+      Object.keys(data).forEach((key) => {
+        const sliderName = key.replace("Check", "-check-slider");
+        const isChecked = data[key].isChecked;
+        const value = data[key].value;
+
+        console.log(document.querySelector(`.${sliderName}`));
+        // document.querySelector(`.${sliderName}`).checked = isChecked;
+        document.querySelector(`.${sliderName}`).setAttribute("value", value);
+        // updateSliderValue(`${sliderName}-value`, value);
+      });
+    })
+    .catch((error) => console.error("Error loading JSON:", error));
+}
+
+loadJSONValues();
+// ###########################################################################################
 
 // Function to open the camera for video recording
 function openCamera(e) {
@@ -192,7 +223,17 @@ function uploadRecording() {
   const formData = new FormData();
   formData.append("video", recordedBlob, "recorded.webm");
 
-  fetch("/upload", {
+  modal.innerHTML = "";
+  modal.appendChild(loader);
+  loader.classList.remove("hidden");
+
+  setTimeout(function () {
+    modal.appendChild(sliderBox);
+    loader.classList.add("hidden");
+    sliderBox.classList.remove("hidden");
+  }, 10000);
+
+  fetch("http://127.0.0.1:5000/upload", {
     method: "POST",
     body: formData,
   })
@@ -443,7 +484,7 @@ function uploadPicture() {
 
     formData.append("image", blob, "captured_image.png");
     uloadingStatus();
-    fetch("/upload", {
+    fetch("https://github.com/8Nero/IntuitDetect", {
       method: "POST",
       body: formData,
     })

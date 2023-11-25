@@ -1,0 +1,26 @@
+{
+  "aloneCheck": {
+    "isChecked": false,
+    "value": 30
+  },
+  "eyes-lipsCheck": {
+    "isChecked": false,
+    "value": 60
+  },
+  "color-compositionCheck": {
+    "isChecked": false,
+    "value": 80
+  },
+  "blur-glareCheck": {
+    "isChecked": false,
+    "value": 40
+  },
+  "voiceCheck": {
+    "isChecked": false,
+    "value": 20
+  },
+  "lipsyncCheck": {
+    "isChecked": false,
+    "value": 100
+  }
+}
