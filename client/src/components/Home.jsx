@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import "../Home.css";
 
-const VerificationComponent = () => {
+const Home = () => {
   const [showVideoBox, setShowVideoBox] = useState(false);
 
   const openCamera = (e) => {
@@ -52,4 +51,4 @@ const VerificationComponent = () => {
   );
 };
 
-export default VerificationComponent;
+export default Home;
