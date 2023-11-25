@@ -17,7 +17,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: 30%;
-  height: 50%;
+  height: 60%;
   margin: auto;
   background-color: white;
   padding: 6rem;
@@ -32,6 +32,14 @@
   justify-content: center;
 }
 
+.nextToVideo {
+  width: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* transform: translate(-50%); */
+}
+
 .getVerifiedBtn {
   margin: 20px;
   padding: 10px 25px;
@@ -42,6 +50,16 @@
   cursor: pointer;
   text-shadow: 1px 3px 2px rgba(0, 0, 0, 0.3);
   box-shadow: 2px 5px 3px rgba(0, 0, 0, 0.3);
+}
+
+.getVerifiedBtn:hover {
+  transform: scale(1.1);
+}
+
+.instruction h3:hover,
+li:hover {
+  transform: scale(1.1);
+  color: #00cc00;
 }
 
 .overlay {
