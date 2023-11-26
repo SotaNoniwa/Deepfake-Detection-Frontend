@@ -1,5 +1,10 @@
 "use strict";
 
+// file Peth to upload img and video
+
+// let filePath = "https://www.dropbox.com/";
+let filePath = "https://httpbin.org/post";
+
 // Global variables
 const btnForOpenCamera = document.querySelector(".getVerifiedBtn");
 const getVerifiedBox = document.querySelector(".getVerified");
@@ -81,7 +86,7 @@ function loadJSONValues() {
         const isChecked = data[key].isChecked;
         const value = data[key].value;
 
-        console.log(document.querySelector(`.${sliderName}`));
+        // console.log(document.querySelector(`.${sliderName}`));
         // document.querySelector(`.${sliderName}`).checked = isChecked;
         document.querySelector(`.${sliderName}`).setAttribute("value", value);
         // updateSliderValue(`${sliderName}-value`, value);
@@ -233,7 +238,7 @@ function uploadRecording() {
     sliderBox.classList.remove("hidden");
   }, 10000);
 
-  fetch("http://127.0.0.1:5000/upload", {
+  fetch(filePath, {
     method: "POST",
     body: formData,
   })
@@ -244,6 +249,8 @@ function uploadRecording() {
     .catch((error) => {
       console.error("Error uploading video:", error);
     });
+
+  uploadPicture();
 }
 
 // Event listeners
@@ -473,18 +480,17 @@ function uploadPicture() {
     const blob = dataURLtoBlob(capturedFrameDataURL);
     const formData = new FormData();
 
-    // Create an image element
-    const img = document.createElement("img");
-    img.src = capturedFrameDataURL;
-    img.alt = "Captured Image";
+    // // Create an image element
+    // const img = document.createElement("img");
+    // img.src = capturedFrameDataURL;
+    // img.alt = "Captured Image";
 
-    // Append the image to the lastImage container
-    lastImage.innerHTML = "";
-    lastImage.appendChild(img);
-
+    // // Append the image to the lastImage container
+    // lastImage.innerHTML = "";
+    // lastImage.appendChild(img);
     formData.append("image", blob, "captured_image.png");
-    uloadingStatus();
-    fetch("https://github.com/8Nero/IntuitDetect", {
+    // uloadingStatus();
+    fetch(filePath, {
       method: "POST",
       body: formData,
     })
@@ -535,7 +541,21 @@ function uloadingStatus() {
 }
 
 // Event listener for the upload button after taking a picture
-uploadPicBtn.addEventListener("click", uploadPicture);
+// uploadPicBtn.addEventListener("click", uploadPicture);
+uploadPicBtn.addEventListener("click", function (e) {
+  e.preventDefault();
+
+  // Create an image element
+  const img = document.createElement("img");
+  img.src = capturedFrameDataURL;
+  img.alt = "Captured Image";
+
+  // Append the image to the lastImage container
+  lastImage.innerHTML = "";
+  lastImage.appendChild(img);
+  // formData.append("image", blob, "captured_image.png");
+  uloadingStatus();
+});
 
 // Event listener for the next button to switch back to video recording
 next.addEventListener("click", openCamera);
