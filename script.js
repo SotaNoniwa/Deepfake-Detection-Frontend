@@ -2,8 +2,8 @@
 
 // file Peth to upload img and video
 
-// let filePath = "https://www.dropbox.com/";
-let filePath = "https://httpbin.org/post";
+let filePath = "http://127.0.0.1:5502/";
+// let filePath = "https://httpbin.org/post";
 
 // Global variables
 const btnForOpenCamera = document.querySelector(".getVerifiedBtn");
@@ -76,19 +76,37 @@ function updateSliderValue(valueId, sliderValue) {
   //   console.log(`Slider value updated: ${sliderValue}`);
 }
 
+function fillTheSliders(className, value) {
+  let percentage = value;
+  let a;
+  const rangeInput = document.querySelector(className);
+  value > 50 ? (a = "#4caf50") : (a = "#ff1a1a");
+  rangeInput.style.setProperty("--thumb-background-color", a);
+  // rangeInput.addEventListener("mouseover", function () {
+  //   this.style.setProperty("--thumb-background-color", a);
+  // });
+
+  rangeInput.style.background = `linear-gradient(to right, ${a} 0%, ${a} ${percentage}%, #d3d3d3 ${percentage}%, #d3d3d3 100%)`;
+}
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 function loadJSONValues() {
   fetch("sliderResult.json")
     .then((response) => response.json())
     .then((data) => {
       Object.keys(data).forEach((key) => {
-        const sliderName = key.replace("Check", "-check-slider");
+        let sliderName = key.replace("Check", "-check-slider");
         const isChecked = data[key].isChecked;
         const value = data[key].value;
 
         // console.log(document.querySelector(`.${sliderName}`));
         // document.querySelector(`.${sliderName}`).checked = isChecked;
         document.querySelector(`.${sliderName}`).setAttribute("value", value);
+
+        fillTheSliders(`.${sliderName}`, value);
+
+        sliderName = key.replace("Check", "-value");
+        console.log(sliderName);
+        updateSliderValue(`${sliderName}`, value);
         // updateSliderValue(`${sliderName}-value`, value);
       });
     })
@@ -187,7 +205,7 @@ function showRecordedVideo() {
   videoState.style.display = "none";
   videoTimer.style.display = "none";
 
-  const recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
+  const recordedBlob = new Blob(recordedChunks, { type: "video/mp4" });
   recordedVideo.src = URL.createObjectURL(recordedBlob);
   recordedVideo.autoplay = false;
   recordedVideo.controls = true;
@@ -222,35 +240,85 @@ function resetRecording(e) {
   openCamera(e);
 }
 
+// // Function to upload the recorded video
+// function uploadRecording() {
+//   saveToLocal(recordedChunks, "video.mp4");
+
+//   const recordedBlob = new Blob(recordedChunks, { type: "video/mp4" });
+//   const formData = new FormData();
+//   formData.append("video", recordedBlob, "video.mp4");
+
+//   modal.innerHTML = "";
+//   modal.appendChild(loader);
+//   loader.classList.remove("hidden");
+
+//   console.log(formData);
+//   setTimeout(function () {
+//     modal.appendChild(sliderBox);
+//     loader.classList.add("hidden");
+//     sliderBox.classList.remove("hidden");
+//   }, 10000);
+
+//   fetch(filePath, {
+//     method: "POST",
+//     body: formData,
+//   })
+//     .then((response) => response.json())
+//     .then((data) => {
+//       console.log("Video uploaded successfully:", data);
+//     })
+//     .catch((error) => {
+//       console.error("Error uploading video:", error);
+//     });
+
+//   uploadPicture();
+// }
+
 // Function to upload the recorded video
 function uploadRecording() {
-  const recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
-  const formData = new FormData();
-  formData.append("video", recordedBlob, "recorded.webm");
+  saveToLocal(recordedChunks, "video.mp4");
 
+  const recordedBlob = new Blob(recordedChunks, { type: "video/mp4" });
+  const videoUrl = URL.createObjectURL(recordedBlob);
+
+  // Create a download link
+  const downloadLink = document.createElement("a");
+  downloadLink.href = videoUrl;
+  downloadLink.download = "recorded_video.mp4";
+  downloadLink.click();
+  // downloadLink.textContent = "Download Recorded Video";
+
+  uploadPicture();
+  uploadToServer(recordedBlob);
+}
+
+function uploadToServer(blob) {
   modal.innerHTML = "";
   modal.appendChild(loader);
   loader.classList.remove("hidden");
 
+  // console.log(formData);
   setTimeout(function () {
     modal.appendChild(sliderBox);
     loader.classList.add("hidden");
     sliderBox.classList.remove("hidden");
-  }, 10000);
+  }, 1000);
+  // const formData = new FormData();
+  // formData.append("video", blob, "video.mp4");
 
-  fetch(filePath, {
-    method: "POST",
-    body: formData,
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Video uploaded successfully:", data);
-    })
-    .catch((error) => {
-      console.error("Error uploading video:", error);
-    });
+  // fetch(filePath, {
+  //   method: "POST",
+  //   body: formData,
+  // })
+  //   .then((response) => response.json())
+  //   .then((data) => {
+  //     console.log("Video uploaded successfully:", data);
+  //   })
+  //   .catch((error) => {
+  //     console.error("Error uploading video:", error);
+  //   });
 
-  uploadPicture();
+  // uploadPicture();
 }
 
 // Event listeners
@@ -258,6 +326,7 @@ function uploadRecording() {
 // Event listener for the start/stop recording button
 rocerdingStartImg.addEventListener("click", function (e) {
   e.preventDefault();
+  videoBox.appendChild(rocerdPauseImg);
   videoBox.appendChild(videoState);
 
   if (isRecording) {
@@ -446,7 +515,6 @@ function capturePicture() {
 resetPicBtn.addEventListener("click", function (e) {
   e.preventDefault();
   stopCamera();
-  recordedChunks = [];
   resetRecordingForPic();
   openCameraForPic();
 });
@@ -470,6 +538,7 @@ btnForOpenCamera.addEventListener("click", function (e) {
 // Function to reset the recording process for taking pictures
 function resetRecordingForPic() {
   videoBox.innerHTML = "";
+  recordedChunks = [];
 }
 
 // Function to upload the captured picture
@@ -489,20 +558,22 @@ function uploadPicture() {
     // lastImage.innerHTML = "";
     // lastImage.appendChild(img);
     formData.append("image", blob, "captured_image.png");
-    // uloadingStatus();
-    fetch(filePath, {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Image uploaded successfully:", data);
-      })
-      .catch((error) => {
-        console.error("Error uploading image:", error);
-      });
-  } else {
-    console.error("No captured frame available for upload.");
+    uloadingStatus();
+
+    //   console.log(formData);
+    //   fetch(filePath, {
+    //     method: "POST",
+    //     body: formData,
+    //   })
+    //     .then((response) => response.json())
+    //     .then((data) => {
+    //       console.log("Image uploaded successfully:", data);
+    //     })
+    //     .catch((error) => {
+    //       console.error("Error uploading image:", error);
+    //     });
+    // } else {
+    //   console.error("No captured frame available for upload.");
   }
 }
 
@@ -534,7 +605,7 @@ function uloadingStatus() {
   videoBox.appendChild(loader);
 
   setTimeout(function () {
-    videoBox.removeChild(loader);
+    // videoBox.removeChild(loader);
     videoBox.appendChild(nextToVideo);
     afterPicture.classList.remove("hidden");
   }, 1000);
