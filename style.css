@@ -534,7 +534,7 @@ input[type="range"] {
   margin: 0 10px;
   -webkit-appearance: none;
   appearance: none;
-  height: 12px;
+  height: 13px;
   border-radius: 5px;
   background: #d3d3d3;
   outline: none;
@@ -549,14 +549,9 @@ input[type="range"]::-webkit-slider-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  /* background: #4caf50; */
+  background: #4caf50;
   cursor: pointer;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  background: var(--thumb-background-color);
-  /* other styles... */
 }
 
 input[type="range"]:hover {
@@ -564,5 +559,5 @@ input[type="range"]:hover {
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  background: var(--thumb-background-color);
+  background: #45a049;
 }
